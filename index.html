@@ -1,53 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Love from Leander</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(45deg, 
-                red, orange, yellow, green, cyan, blue, violet);
-            background-size: 300% 300%;
-            animation: rainbow 10s infinite;
-        }
-        .glass {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.2);
-            padding: 30px 50px;
-            border-radius: 15px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            text-align: center;
-            color: white;
-        }
-        @keyframes rainbow {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-        .glass h1 {
-            margin: 0;
-            font-size: 2.5rem;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Project Board</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 80%;
+      margin: 20px auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .filters input,
+    .filters select {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .project-card {
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 10px;
+      border-radius: 8px;
+      width: 250px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .project-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .project-card h3 {
+      margin-top: 0;
+    }
+    .project-card p {
+      color: #555;
+      font-size: 14px;
+    }
+    .project-card .subheader {
+      font-size: 12px;
+      color: #777;
+    }
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    .popup-content {
+      background-color: white;
+      width: 80%;
+      padding: 30px;
+      border-radius: 8px;
+      max-height: 80%;
+      overflow-y: auto;
+      position: relative;
+    }
+    .popup h2 {
+      margin-top: 0;
+    }
+    .popup-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      color: #333;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .popup-comments {
+      margin-top: 20px;
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+    }
+    .popup-comments textarea {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 10px;
+    }
+    .popup-comments button {
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .popup-comments button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-    <div class="glass">
-        <h1>I love you Kinnari</h1>
+
+  <div class="container">
+    <div>
+      <div>
+        <div class="filters">
+          <input type="text" id="searchBar" placeholder="Search Projects..." onkeyup="filterProjects()">
+          <select id="sortSelect" onchange="filterProjects()">
+            <option value="recent">Sort by Recent</option>
+            <option value="likes">Sort by Likes</option>
+            <option value="peopleCount">Sort by People Count</option>
+            <!-- <option value="techStack">Sort by Tech Stack</option> -->
+          </select>
+          <select id="peopleRange" onchange="filterProjects()">
+            <option value="all">All People Count</option>
+            <option value="0-5">0-5 People</option>
+            <option value="6-10">6-10 People</option>
+            <option value="11+">11+ People</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="projectBoard"></div>
     </div>
+   
+  </div>
+  <div class="popup" id="popupModal">
+    <div class="popup-content">
+      <button class="popup-close" onclick="closePopup()">×</button>
+      <h2 id="popupTitle">Project Title</h2>
+      <p id="popupDescription">Project Description</p>
+      <p><strong>Posted by:</strong> <span id="popupPostedBy">John Doe</span></p>
+      <p><strong>Tech Stack:</strong> <span id="popupTechStack">JavaScript, API, HTML, CSS</span></p>
+      <p><strong>Posted on:</strong> <span id="popupSubheader">Date</span></p>
+      <p><strong>People Count:</strong> <span id="popupPeopleCount">0</span></p>
+      <p><strong>Likes:</strong> <span id="popupLikes">0</span></p>
+      <p><strong>GitHub Link:</strong> <a href="#" id="popupGithubLink" target="_blank">View GitHub</a></p>
+      <div class="popup-comments">
+        <h3>Leave a Comment or Request to Join</h3>
+        <textarea id="commentBox" placeholder="Enter your comment..."></textarea>
+        <button onclick="submitComment()">Submit</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Sample project data
+    const projectsData = [
+  {
+    id: "weather-dashboard",
+    title: "Weather Dashboard",
+    techStack: ["JavaScript", "API", "HTML", "CSS"],
+    subheader: "February 1, 2025",
+    description:
+      "A weather dashboard that pulls real-time data from a weather API to provide current weather updates, forecasts, and customizable locations. Built with JavaScript and integrates dynamic weather charts.",
+    postedBy: "John Doe",
+    githubLink: "https://github.com/johndoe/weather-dashboard",
+    comments: [],
+    peopleCount: 5,
+    likes: 20,
+  },
+  {
+    id: "task-manager",
+    title: "Task Manager",
+    techStack: ["JavaScript", "Node.js", "Express", "MongoDB"],
+    subheader: "January 10, 2025",
+    description:
+      "A task management app built with Node.js and MongoDB to help track personal and professional tasks. Supports user authentication and CRUD operations.",
+    postedBy: "Jane Smith",
+    githubLink: "https://github.com/janesmith/task-manager",
+    comments: [],
+    peopleCount: 8,
+    likes: 15,
+  },
+  {
+    id: "budget-tracker",
+    title: "Budget Tracker",
+    techStack: ["React", "Redux", "Node.js", "MongoDB"],
+    subheader: "December 15, 2024",
+    description:
+      "A personal finance tracker built using React and Redux. It allows users to track income and expenses, categorize transactions, and visualize spending patterns.",
+    postedBy: "Alice Cooper",
+    githubLink: "https://github.com/alicecooper/budget-tracker",
+    comments: [],
+    peopleCount: 4,
+    likes: 30,
+  },
+  {
+    id: "ecommerce-site",
+    title: "E-Commerce Site",
+    techStack: ["React", "Node.js", "Express", "MongoDB", "Stripe API"],
+    subheader: "November 25, 2024",
+    description:
+      "A full-fledged e-commerce platform featuring product listings, shopping cart, and checkout functionality. Integrated with Stripe for secure payments and MongoDB for user and product data.",
+    postedBy: "Bob Martin",
+    githubLink: "https://github.com/bobmartin/ecommerce-site",
+    comments: [],
+    peopleCount: 10,
+    likes: 40,
+  },
+  {
+    id: "social-media-app",
+    title: "Social Media App",
+    techStack: ["React", "Node.js", "GraphQL", "MongoDB"],
+    subheader: "October 30, 2024",
+    description:
+      "A social media platform where users can post, comment, like, and follow others. Built using React and Node.js with GraphQL for efficient data queries.",
+    postedBy: "Charlie Davis",
+    githubLink: "https://github.com/charliedavis/social-media-app",
+    comments: [],
+    peopleCount: 12,
+    likes: 50,
+  },
+  {
+    id: "chat-app",
+    title: "Real-Time Chat App",
+    techStack: ["React", "Socket.io", "Node.js", "Express"],
+    subheader: "September 5, 2024",
+    description:
+      "A real-time chat application that supports private and group messaging. Built with React for the front-end and Socket.io for real-time communication.",
+    postedBy: "Diana Lee",
+    githubLink: "https://github.com/dianalee/chat-app",
+    comments: [],
+    peopleCount: 6,
+    likes: 25,
+  },
+  {
+    id: "portfolio-website",
+    title: "Portfolio Website",
+    techStack: ["HTML", "CSS", "JavaScript"],
+    subheader: "August 15, 2024",
+    description:
+      "A personal portfolio website showcasing projects, skills, and achievements. Fully responsive and built with HTML, CSS, and JavaScript.",
+    postedBy: "Eve Taylor",
+    githubLink: "https://github.com/evetaylor/portfolio-website",
+    comments: [],
+    peopleCount: 2,
+    likes: 18,
+  },
+];
+
+    const projectBoard = document.getElementById("projectBoard");
+    // Function to create project cards
+    function createProjectCard(project) {
+      const card = document.createElement("div");
+      card.classList.add("project-card");
+      card.onclick = () => openPopup(project);
+      card.innerHTML = `
+        <h3>${project.title}</h3>
+        <p class="subheader">${project.subheader}</p>
+        <p>${project.description.substring(0, 100)}...</p>
+        <p><strong>Tech Stack:</strong> ${project.techStack.join(", ")}</p>
+        <p><strong>Likes:</strong> ${project.likes}</p>
+        <p><strong>People Count:</strong> ${project.peopleCount}</p>
+      `;
+      projectBoard.appendChild(card);
+    }
+    // Function to open the popup with project details
+    function openPopup(project) {
+      document.getElementById("popupTitle").textContent = project.title;
+      document.getElementById("popupDescription").textContent = project.description;
+      document.getElementById("popupPostedBy").textContent = project.postedBy;
+      document.getElementById("popupTechStack").textContent = project.techStack.join(", ");
+      document.getElementById("popupSubheader").textContent = project.subheader;
+      document.getElementById("popupPeopleCount").textContent = project.peopleCount;
+      document.getElementById("popupLikes").textContent = project.likes;
+      document.getElementById("popupGithubLink").href = project.githubLink;
+      document.getElementById("popupGithubLink").textContent = "View GitHub";
+      popupModal.style.display = "flex";
+    }
+    // Function to close the popup
+    function closePopup() {
+      popupModal.style.display = "none";
+    }
+    // Function to submit a comment
+    function submitComment() {
+      const comment = document.getElementById("commentBox").value;
+      if (comment) {
+        alert("Your comment has been submitted!");
+        // You could implement actual comment functionality here
+        document.getElementById("commentBox").value = ""; // Clear the comment box
+      } else {
+        alert("Please enter a comment before submitting.");
+      }
+    }
+    // Filter and Sort Projects based on Search and Filters
+    function filterProjects() {
+      const searchTerm = document.getElementById("searchBar").value.toLowerCase();
+      const sortOption = document.getElementById("sortSelect").value;
+      const peopleRange = document.getElementById("peopleRange").value;
+      let filteredProjects = projectsData.filter(project => {
+        // Search filter
+        const matchesSearch = project.title.toLowerCase().includes(searchTerm) || project.description.toLowerCase().includes(searchTerm);
+        // People count filter
+        let matchesPeopleRange = true;
+        if (peopleRange === "0-5") matchesPeopleRange = project.peopleCount >= 0 && project.peopleCount <= 5;
+        else if (peopleRange === "6-10") matchesPeopleRange = project.peopleCount >= 6 && project.peopleCount <= 10;
+        else if (peopleRange === "11+") matchesPeopleRange = project.peopleCount >= 11;
+        return matchesSearch && matchesPeopleRange;
+      });
+      // Sort the filtered projects
+      if (sortOption === "recent") {
+        filteredProjects.sort((a, b) => new Date(b.subheader) - new Date(a.subheader));
+      } else if (sortOption === "likes") {
+        filteredProjects.sort((a, b) => b.likes - a.likes);
+      } else if (sortOption === "peopleCount") {
+        filteredProjects.sort((a, b) => b.peopleCount - a.peopleCount);
+      // } else if (sortOption === "techStack") {
+      //   filteredProjects.sort((a, b) => a.techStack.join(',').localeCompare(b.techStack.join(',')));
+      }
+      // Clear existing cards
+      projectBoard.innerHTML = "";
+      // Create the filtered and sorted project cards
+      filteredProjects.forEach(createProjectCard);
+    }
+    // Initial render
+    filterProjects();
+  </script>
 </body>
 </html>
