@@ -3,114 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CollabHub - Collaborate and Innovate</title>
-      <link rel="icon" type="image/x-icon" href="favicon.ico">
-       <script defer data-domain="leanderziehm.com" src="https://plausible.io/js/script.outbound-links.js"></script><script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
-    <style>
+    <title>Companies</title>
+    <script src="data.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #333;
+            margin: 20px;
         }
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 20px 0;
-            text-align: center;
+        .company {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
         }
-        header h1 {
-            margin: 0;
-            font-size: 2.5rem;
+        .company img {
+            max-width: 100px;
+            height: auto;
         }
-        header p {
-            margin: 5px 0 0;
-            font-size: 1.2rem;
+        .company-details {
+            margin-left: 120px;
         }
-        nav {
-            display: flex;
-            justify-content: center;
-            background-color: #0056b3;
-            padding: 10px 0;
+        h2 {
+            margin-top: 0;
         }
-        a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 1rem;
-             background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .section {
-            margin-bottom: 30px;
-        }
-        .section h2 {
-            color: #0056b3;
-            margin-bottom: 10px;
-        }
-        .section p {
-            margin: 10px 0;
-            line-height: 1.6;
-        }
-        footer {
-            text-align: center;
-            padding: 20px 0;
-            background-color: #f1f1f1;
-            margin-top: 20px;
-        }
-        footer p {
-            margin: 0;
-            font-size: 0.9rem;
+        select {
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
-<header>
-    <h1>CollabHub</h1>
-    <p>Collaborate, Learn, and Innovate Together</p>
-</header>
-<!-- <nav> -->
-    <!-- <a href="#about">About</a> -->
-    <!-- <a href="#how-it-works">How It Works</a> -->
-    <!-- <a href="#join">Join Us</a> -->
-<!-- </nav> -->
-<div class="container">
-    <section id="about" class="section">
-        <h2>What is CollabHub?</h2>
-        <p>CollabHub is a platform designed for programmers, engineers, and tech enthusiasts to find each other, collaborate on projects, and grow together. Share your ideas, contribute to others' projects, and build connections in a supportive, open-source community.</p>
-    </section>
-    <section id="how-it-works" class="section">
-        <h2>How Does It Work?</h2>
-        <p>It’s easy to get started with CollabHub:</p>
-        <p><strong>1.</strong> Post your project and outline the skills or help you need.</p>
-        <p><strong>2.</strong> Browse projects and join those that interest you.</p>
-        <p><strong>3.</strong> Collaborate using built-in tools or external platforms.</p>
-        <p><strong>4.</strong> Learn, network, and create amazing things together!</p>
-    </section>
-    <section id="join" class="section">
-        <h2>Join the Movement</h2>
-        <p>At CollabHub, we believe in the power of community-driven innovation. Whether you're a seasoned pro or just starting out, there's a place for you here. Start exploring opportunities or sharing your project today!</p>
-        <p><a href="browseProjects.html">Browse Projects</a></p>
-    </section>
-</div>
-<footer>
-    <p>&copy; 2025 CollabHub. All rights reserved.</p>
-</footer>
+    <h1>Companies List</h1>
+    <p>Total Companies: <span id="total-companies">0</span></p>
+    <form id="filter-form">
+        <label for="sort_by">Sort By:</label>
+        <select name="sort_by" id="sort_by">
+            <option value="name">Company Name</option>
+            <option value="num_jobs">Jobs Available</option>
+            <option value="num_jobs_last_30_days">Jobs Last 30 Days</option>
+            <option value="employee_count">Employee Count</option>
+            <option value="industry">Industry</option>
+            <option value="city">City</option>
+        </select>
+        <label for="industry">Filter by Industry:</label>
+        <select name="industry" id="industry">
+            <option value="">All Industries</option>
+        </select>
+        <label for="city">Filter by City:</label>
+        <select name="city" id="city">
+            <option value="">All Cities</option>
+        </select>
+    </form>
+    <div id="companies-list"></div>
+   <script>
+    const totalCompaniesElement = document.getElementById('total-companies');
+    const companiesListElement = document.getElementById('companies-list');
+    const industrySelect = document.getElementById('industry');
+    const citySelect = document.getElementById('city');
+    const sortBySelect = document.getElementById('sort_by');
+    let companies = [...data]; // Create a copy of the data
+
+    // Update the list of industries
+    function updateIndustries() {
+        const industries = [...new Set(companies.map(company => company.industry || 'Unknown'))].sort();
+        industries.forEach(industry => {
+            const option = document.createElement('option');
+            option.value = industry;
+            option.textContent = industry;
+            industrySelect.appendChild(option);
+        });
+    }
+
+    // Update the list of cities
+    function updateCities() {
+        const cities = [...new Set(companies.map(company => company.city || 'Unknown'))].sort();
+        cities.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            citySelect.appendChild(option);
+        });
+    }
+
+    // Sort companies by a selected attribute
+    function sortCompanies(companies, sortBy) {
+        return companies.sort((a, b) => {
+            const valA = typeof a[sortBy] === 'string' ? a[sortBy].toLowerCase() : a[sortBy];
+            const valB = typeof b[sortBy] === 'string' ? b[sortBy].toLowerCase() : b[sortBy];
+            if (valA < valB) return -1;
+            if (valA > valB) return 1;
+            return 0;
+        });
+    }
+
+    // Filter companies by industry and city
+    function filterCompanies(companies, industryFilter, cityFilter) {
+        return companies.filter(company => {
+            const matchesIndustry = industryFilter 
+                ? company.industry && company.industry.toLowerCase().includes(industryFilter.toLowerCase()) 
+                : true;
+
+            const matchesCity = cityFilter 
+                ? company.city && company.city.toLowerCase().includes(cityFilter.toLowerCase()) 
+                : true;
+
+            return matchesIndustry && matchesCity;
+        });
+    }
+
+    // Render the list of companies
+    function renderCompanies(companies) {
+        companiesListElement.innerHTML = '';
+        companies.forEach(company => {
+            const companyDiv = document.createElement('div');
+            companyDiv.classList.add('company');
+            companyDiv.innerHTML = `
+                <div class="company-logo">
+                    <img src="${company.logo}" alt="${company.name} logo">
+                </div>
+                <div class="company-details">
+                    <h2>${company.name}</h2>
+                    <p><strong>LinkedIn:</strong> <a href="${company.linkedin_url}" target="_blank">${company.linkedin_url}</a></p>
+                    <p><strong>Company URL:</strong> <a href="${company.url}" target="_blank">${company.url}</a></p>
+                    <p><strong>Industry:</strong> ${company.industry}</p>
+                    <p><strong>Employee Count:</strong> ${company.employee_count}</p>
+                    <p><strong>Total Jobs:</strong> ${company.num_jobs}</p>
+                    <p><strong>Jobs Last 30 Days:</strong> ${company.num_jobs_last_30_days}</p>
+                    <p><strong>Description:</strong> ${company.long_description}</p>
+                    <p><strong>City:</strong> ${company.city}</p>
+                    <p><strong>Technologies:</strong> ${company.technology_names}</p>
+                </div>
+            `;
+            companiesListElement.appendChild(companyDiv);
+        });
+        totalCompaniesElement.textContent = companies.length;
+    }
+
+    // Handle change events for sorting, industry, and city filters
+    function handleChange() {
+        const sortBy = sortBySelect.value;
+        const industryFilter = industrySelect.value;
+        const cityFilter = citySelect.value;
+        companies = filterCompanies(data, industryFilter, cityFilter);
+        companies = sortCompanies(companies, sortBy);
+        renderCompanies(companies);
+    }
+
+    // Add event listeners for automatic filtering and sorting
+    sortBySelect.addEventListener('change', handleChange);
+    industrySelect.addEventListener('change', handleChange);
+    citySelect.addEventListener('change', handleChange);
+
+    // Initialize lists and render companies on page load
+    updateIndustries();
+    updateCities();
+    renderCompanies(companies);
+</script>
+
 </body>
 </html>
