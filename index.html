@@ -5,28 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Companies</title>
     <script src="data.js"></script>
-    <style>
+  <style>
+        /* General Reset and Styling */
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
         }
-        .company {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 15px;
+        
+        h1, h2 {
+            color: #444;
         }
-        .company img {
-            max-width: 100px;
-            height: auto;
+        
+        a {
+            color: #007BFF;
+            text-decoration: none;
         }
-        .company-details {
-            margin-left: 120px;
+        
+        a:hover {
+            text-decoration: underline;
         }
-        h2 {
-            margin-top: 0;
+
+        /* Container */
+        body {
+            padding: 20px;
         }
+
+        /* Filter Form Styling */
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        form label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
         select {
+            padding: 8px 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        select:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        /* Companies List */
+        .company {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+/*        .company:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+*/
+        .company-logo img {
+            max-width: 100px;
+            border-radius: 8px;
+        }
+
+        .company-details {
+            margin-left: 20px;
+            flex: 1;
+        }
+
+        .company-details h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .company-details p {
             margin: 5px 0;
+        }
+
+        .company-details strong {
+            font-weight: 600;
+        }
+
+        /* Total Companies */
+        #total-companies {
+            font-weight: bold;
+            color: #444;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .company {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .company-logo img {
+                margin-bottom: 15px;
+            }
+
+            .company-details {
+                margin-left: 0;
+            }
+
+            form {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -61,16 +161,39 @@
     const sortBySelect = document.getElementById('sort_by');
     let companies = [...data]; // Create a copy of the data
 
+function updateIndustries() {
+    // Count occurrences of each industry
+    const industryCounts = companies.reduce((acc, company) => {
+        const industry = company.industry || 'Unknown';
+        acc[industry] = (acc[industry] || 0) + 1;
+        return acc;
+    }, {});
+
+    // Create a sorted array of industries by count in descending order
+    const sortedIndustries = Object.entries(industryCounts)
+        .sort((a, b) => b[1] - a[1]) // Sort by count (descending)
+        .map(entry => entry[0]);     // Extract only the industry names
+
+    // Update the dropdown (industrySelect)
+    sortedIndustries.forEach(industry => {
+        const option = document.createElement('option');
+        option.value = industry;
+        option.textContent = industry;
+        industrySelect.appendChild(option);
+    });
+}
+
+
     // Update the list of industries
-    function updateIndustries() {
-        const industries = [...new Set(companies.map(company => company.industry || 'Unknown'))].sort();
-        industries.forEach(industry => {
-            const option = document.createElement('option');
-            option.value = industry;
-            option.textContent = industry;
-            industrySelect.appendChild(option);
-        });
-    }
+    // function updateIndustries() {
+    //     const industries = [...new Set(companies.map(company => company.industry || 'Unknown'))].sort();
+    //     industries.forEach(industry => {
+    //         const option = document.createElement('option');
+    //         option.value = industry;
+    //         option.textContent = industry;
+    //         industrySelect.appendChild(option);
+    //     });
+    // }
 
     // Update the list of cities
     function updateCities() {
@@ -84,15 +207,22 @@
     }
 
     // Sort companies by a selected attribute
-    function sortCompanies(companies, sortBy) {
-        return companies.sort((a, b) => {
-            const valA = typeof a[sortBy] === 'string' ? a[sortBy].toLowerCase() : a[sortBy];
-            const valB = typeof b[sortBy] === 'string' ? b[sortBy].toLowerCase() : b[sortBy];
+function sortCompanies(companies, sortBy, order = 'desc') {
+    return companies.sort((a, b) => {
+        const valA = typeof a[sortBy] === 'string' ? a[sortBy].toLowerCase() : a[sortBy];
+        const valB = typeof b[sortBy] === 'string' ? b[sortBy].toLowerCase() : b[sortBy];
+        
+        if (order === 'asc') {
             if (valA < valB) return -1;
             if (valA > valB) return 1;
-            return 0;
-        });
-    }
+        } else if (order === 'desc') {
+            if (valA < valB) return 1;
+            if (valA > valB) return -1;
+        }
+        return 0;
+    });
+}
+
 
     // Filter companies by industry and city
     function filterCompanies(companies, industryFilter, cityFilter) {
