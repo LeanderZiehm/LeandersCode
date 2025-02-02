@@ -10,10 +10,11 @@
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
-            padding: 0;
+
             background-color: #f4f4f9;
             color: #333;
             line-height: 1.6;
+             padding: 20px;
         }
         
         h1, h2 {
@@ -29,10 +30,6 @@
             text-decoration: underline;
         }
 
-        /* Container */
-        body {
-            padding: 20px;
-        }
 
         /* Filter Form Styling */
         form {
@@ -108,6 +105,23 @@
             font-weight: bold;
             color: #444;
         }
+                .technology-card {
+            display: inline-block;
+            padding: 20px;
+            margin: 10px;
+            background-color: #f4f4f4;
+            border-radius: 15px;
+            width: 200px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+                .technology-card img {
+            max-width: 60px;
+            height: auto;
+        }
+        .technology-card h4 {
+            margin: 10px 0;
+        }
 
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -131,7 +145,8 @@
     </style>
 </head>
 <body>
-    <h1>Companies List</h1>
+    <h1>German Companies that use Next.js</h1>
+    <a href="./elasticSearch.html">See Berlin companies that use elastic search</a>
     <p>Total Companies: <span id="total-companies">0</span></p>
     <form id="filter-form">
         <label for="sort_by">Sort By:</label>
@@ -245,6 +260,24 @@ function sortCompanies(companies, sortBy, order = 'desc') {
         companies.forEach(company => {
             const companyDiv = document.createElement('div');
             companyDiv.classList.add('company');
+
+
+
+
+
+
+             let technologyCard = `<h3>Technologies Found:</h3><div class="technologies-cards">`;
+                company.technologies_found.forEach(tech => {
+                    technologyCard += `
+                        <div class="technology-card">
+                            <img src="${tech.technology.logo}" alt="${tech.technology.name} Logo">
+                            <h4>${tech.technology.name}</h4>
+                            <p><strong>Jobs Found:</strong> ${tech.jobs}</p>
+                        </div>
+                    `;
+                      });
+
+
             companyDiv.innerHTML = `
                 <div class="company-logo">
                     <img src="${company.logo}" alt="${company.name} logo">
@@ -260,6 +293,7 @@ function sortCompanies(companies, sortBy, order = 'desc') {
                     <p><strong>Description:</strong> ${company.long_description}</p>
                     <p><strong>City:</strong> ${company.city}</p>
                     <p><strong>Technologies:</strong> ${company.technology_names}</p>
+                    ${technologyCard}
                 </div>
             `;
             companiesListElement.appendChild(companyDiv);
